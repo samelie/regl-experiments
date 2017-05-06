@@ -5,13 +5,19 @@
 
  */
 
+ const ASSETS = process.env.NODE_ENV === "development" ? `assets/projective/` : `../assets/projective/`;
 
-const {regl,camera} = require('./regl')
+//const {regl,camera} = require('./regl')
+const { regl, camera } = require('../common/regl')()
+camera.distance = 3;
+camera.rotation = new Float32Array([-0.12710481882095337, -0.09740500897169113,
+  0.02649819105863571,
+  0.9867393374443054
+])
 const mat4 = require('gl-mat4')
 
 function init(model) {
-
-  const setupEnvMap = regl({
+  const setupMap = regl({
     context: {
       view: () => camera.view(),
     },
@@ -23,8 +29,7 @@ function init(model) {
     gl_FragColor = textureCube(envmap, reflectDir);
   }`,
     uniforms: {
-      envmap: regl.prop('cube'),
-      view: regl.context('view'),
+      view: camera.view(),
       projection: ({ viewportWidth, viewportHeight }) =>
         mat4.perspective([],
           Math.PI / 4,
@@ -40,24 +45,57 @@ function init(model) {
   precision mediump float;
   attribute vec2 position;
   uniform mat4 view;
-  varying vec3 reflectDir;
+  varying vec2 vPos;
   void main() {
-    reflectDir = (view * vec4(position, 1, 0)).xyz;
+    vec2 p = position;
+    p.y -= 10.0;
+    vPos = p;
     gl_Position = vec4(position, 0, 1);
   }`,
     attributes: {
-      position: [-4, -4, -4, 4,
-        8, 0
+      position: [
+      -1, -1,
+       1, -1,
+      -1, 1,
+      1, 1,
       ]
     },
     depth: {
       mask: false,
       enable: false
     },
-    count: 3
+    frag:`precision mediump float;
+
+    #define PI 3.14159265359
+
+  uniform float time;
+  varying vec2 vPos;
+  void main () {
+
+    //https://www.shadertoy.com/view/MdXGDH
+    vec2 uv = vPos * 0.5+ 0.5;
+    float color1, color2, color;
+
+  color1 = (sin(dot(uv.xy,vec2(sin(time*3.0),cos(time*3.0)))*0.02+time*3.0)+1.0)/2.0;
+
+
+  color2 = (cos(length(uv.xy - vec2(0.5,0.5))*0.03)+1.0)/2.0;
+
+  color = (color1)/2.0;
+
+  float red = (cos(PI*color/0.5+time*3.0)+1.0)/2.0;
+  float green = (sin(PI*color/0.5+time*3.0)+1.0)/2.0;
+  float blue  = (sin(+time*3.0)+1.0)/2.0;
+
+    gl_FragColor = vec4(vec3(red,green,blue),1.0);
+  }`,
+    count: 4,
+    uniforms:{
+      time:({tick})=>tick *0.02
+    }
   })
 
-  const modelRoom = require('./model-room')(model)
+  const modelRoom = require('./model-room')(regl, model)
 
 
   require('resl')({
@@ -65,20 +103,20 @@ function init(model) {
     manifest: {
       video: {
         type: 'video',
-        src: 'assets/video.mp4',
+        src: `${ASSETS}video.mp4`,
         stream: true
       },
       diffuse: {
         type: 'image',
-        src: 'assets/1492547381514_0-fs8.png',
+        src: `${ASSETS}1492547381514_0-fs8.png`,
       },
       ao: {
         type: 'image',
-        src: 'assets/1492547381514_0_OCC.png',
+        src: `${ASSETS}1492547381514_0_OCC.png`,
       },
       /*radiance: {
         type: 'binary',
-        src: 'assets/xlight_radiance.dds',
+        src: `${ASSETS}xlight_radiance.dds`,
         parser: (data) => {
           console.log(data);
           const dds = require('./parse-dds')(data)
@@ -94,52 +132,28 @@ function init(model) {
       },*/
       posx: {
         type: 'image',
-        src: 'assets/posx.jpg'
+        src: `${ASSETS}posx.jpg`
       },
       negx: {
         type: 'image',
-        src: 'assets/negx.jpg'
+        src: `${ASSETS}negx.jpg`
       },
       posy: {
         type: 'image',
-        src: 'assets/posy.jpg'
+        src: `${ASSETS}posy.jpg`
       },
       negy: {
         type: 'image',
-        src: 'assets/negy.jpg'
+        src: `${ASSETS}negy.jpg`
       },
       posz: {
         type: 'image',
-        src: 'assets/posz.jpg'
+        src: `${ASSETS}posz.jpg`
       },
       negz: {
         type: 'image',
-        src: 'assets/negz.jpg'
+        src: `${ASSETS}negz.jpg`
       },
-      /*irr_posx: {
-        type: 'image',
-        src: 'assets/irr_posx.jpg'
-      },
-      irr_negx: {
-        type: 'image',
-        src: 'assets/irr_negx.jpg'
-      },
-      irr_posy: {
-        type: 'image',
-        src: 'assets/irr_posy.jpg'
-      },
-      irr_negy: {
-        type: 'image',
-        src: 'assets/irr_negy.jpg'
-      },
-      irr_posz: {
-        type: 'image',
-        src: 'assets/irr_posz.jpg'
-      },
-      irr_negz: {
-        type: 'image',
-        src: 'assets/irr_negz.jpg'
-      }*/
     },
 
     onDone: ({
@@ -181,8 +195,8 @@ function init(model) {
 
       regl.frame(() => {
 
-        setupEnvMap({ cube }, () => {
-          //drawBackground()
+        setupMap(()=>{
+          drawBackground()
           modelRoom({
             radiance: radiance,
             cube: cube,
@@ -192,6 +206,7 @@ function init(model) {
             diffuse: diffusetexture.subimage(diffuse),
           })
           camera.tick()
+
         })
 
         ////drawDoggie({ video: texture.subimage(video) })
@@ -202,7 +217,6 @@ function init(model) {
   })
 }
 
-require('./parse-obj')('assets/ben.obj').then(d => {
-  console.log(d);
-  //init(d)
+require('./parse-obj')(`${ASSETS}ben.obj`).then(d =>{
+  init(d)
 })

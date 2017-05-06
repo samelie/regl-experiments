@@ -1,6 +1,5 @@
-const { regl } = require('./regl')
 const mat4 = require('gl-mat4')
-const modelRoom = (model) => {
+const modelRoom = (regl, model) => {
   return regl({
     vert: `
 
@@ -170,7 +169,7 @@ const modelRoom = (model) => {
 
       color     += colorDrawing.rgb;
 
-      gl_FragColor = vec4(diffuse, 1.);
+      gl_FragColor = vec4(color, 1.);
   }`
 
 
