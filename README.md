@@ -1,6 +1,19 @@
+---
+typora-root-url: ../regl-experiments
+---
+
 #Experiments in REGL
 
 
 ## dev
 
-NODE_ENV=development ./bin/start.sh 360-video
+`yarn start zoetrope` or `yarn start projective`
+
+## Projective
+
+![projective](/screenshots/projective.png)
+
+### Zoetrope
+
+![zoetrope](/screenshots/zoetrope.png)
+
