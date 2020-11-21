@@ -5,7 +5,7 @@
 
  */
 
- const ASSETS = process.env.NODE_ENV === "development" ? `assets/projective/` : `../assets/projective/`;
+ const ASSETS = process.env.NODE_ENV === "development" ? `assets/projective/` : `/assets/`;
 
 //const {regl,camera} = require('./regl')
 const { regl, camera } = require('../common/regl')()
@@ -17,6 +17,7 @@ camera.rotation = new Float32Array([-0.12710481882095337, -0.09740500897169113,
 const mat4 = require('gl-mat4')
 
 function init(model) {
+
   const setupMap = regl({
     context: {
       view: () => camera.view(),
@@ -176,6 +177,7 @@ function init(model) {
     }) => {
       video.autoplay = true
       video.loop = true
+      video.muted = true
       video.play()
 
       const cube = regl.cube(

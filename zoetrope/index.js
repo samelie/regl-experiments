@@ -4,7 +4,7 @@ const scene = require('./scene')(camera)
 const drawBeams = require('./beams')(regl)
 const clear = { depth: 1, color: [0, 0, 0, 1] }
 
- const ASSETS = process.env.NODE_ENV === "development" ? `assets/zoetrope/` : `../assets/zoetrope/`
+ const ASSETS = process.env.NODE_ENV === "development" ? `assets/zoetrope/` : `assets/`
 
 require('resl')({
 
