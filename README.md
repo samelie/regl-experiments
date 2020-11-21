@@ -1,11 +1,7 @@
----
-typora-root-url: ../regl-experiments
----
-
-#Experiments in REGL
+## Experiments in REGL
 
 
-## dev
+#### dev
 
 `yarn start zoetrope` or `yarn start projective`
 
