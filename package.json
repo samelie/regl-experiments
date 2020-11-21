@@ -11,6 +11,7 @@
   "license": "MIT",
   "devDependencies": {
     "babelify": "^7.3.0",
+    "browserify": "^17.0.0",
     "envify": "^4.0.0",
     "glslify": "^6.0.2"
   },
